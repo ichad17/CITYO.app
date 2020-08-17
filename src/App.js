@@ -11,13 +11,13 @@ import {
 } from "react-router-dom";
 
 
-function App() {
+function App(props) {
   return (
     <div id="main">
       <Router>
         <Sidebar/>
         <Topbar/>
-        <MainContent />
+        <MainContent history={props.history}/>
       </Router>
     </div>
   );

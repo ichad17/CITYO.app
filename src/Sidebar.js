@@ -1,20 +1,26 @@
 import React from 'react';
 import {
     BrowserRouter as Router,
-    Switch,
-    Route,
-    Link
+    NavLink
   } from "react-router-dom";
 import homeicon from './images/home icon.png';
 import ordericon from './images/ordericon.png';  
 
-function ListItem(props) {
-    return (
-        <li>
-          <Link to={props.link}><span className="icon"><img src={props.img}/></span></Link>
-          <Link to={props.link}><span>{props.txt}</span></Link>
-        </li>
-    );
+class ListItem extends React.Component {
+    
+    constructor(props) {
+        super(props);
+        this.state = {isActive: false};
+    }
+    
+    render() {
+        return (
+            <li>
+                <NavLink to={this.props.link} activeClassName="selected"><span className="icon"><img src={this.props.img}/></span>
+                <span>{this.props.txt}</span></NavLink>
+            </li>
+        );
+    }
 }
 
 class Sidebar extends React.Component {
@@ -29,7 +35,7 @@ class Sidebar extends React.Component {
             <ListItem img={homeicon} txt={'Home'} link="/home"/>
             <ListItem img={ordericon} txt={'Orders'} link="/orders"/>
             <ListItem img={homeicon} txt={'Menus'} link="/menus"/>
-            <ListItem img={homeicon} txt={'Settings'}/> 
+            <ListItem img={homeicon} txt={'Settings'} link="/test"/> 
           </ul>
         </div>
       );

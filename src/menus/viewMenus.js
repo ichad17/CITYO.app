@@ -131,7 +131,6 @@ class MenuView extends React.Component {
         return(
             <div>
                 <MenuList reRender={this.rerender} menus={this.state.menus}/>
-                <div>{this.rerender}</div>
             </div>
         )
     }

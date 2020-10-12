@@ -75,18 +75,58 @@ function ItemForm(props) {
     );
 }
 
-function CatForm() {
+function CatForm(props) {
+
+    const [catName, catNameUpdate] = useState("")
+
     useEffect(() => {
         formAnimate();
     });
 
+    const pushToServer = () => {
+        const menusApiAddress = "http://192.168.0.14:4000/menu/" + props.urlparams.menuid + "/add-cat" ;
+        console.log(menusApiAddress)
+        const submitData = {name: catName};
+        const postOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(submitData)
+
+        }
+        console.log(submitData)
+
+        fetch(menusApiAddress, postOptions)
+            .then(response => response.text())
+            .then(data => {
+                console.log(data);
+                props.updateParentState();
+            });
+    }
+
+    const handleFormValue = (e) => {
+        e.preventDefault();
+        console.log(e.target.id);
+        catNameUpdate(e.target.value);
+
+    }
+
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        pushToServer();
+        props.formCallback();
+        
+    }
+
     return (
-        <form className="itemAnimate">
+        <form onSubmit={handleFormSubmit} className="itemAnimate">
             <label>
                 Section Name:
-                <input type="text" />
+                <input onChange={handleFormValue} type="text" />
             </label>
-            <input type="submit" value="Add Section" />
+            <input type="submit" value="Add Item" />
         </form>
     );
 }
@@ -96,27 +136,43 @@ function EditMenuPage() {
     
     const params = useParams();
     const [currentMenu, setMenu] = useState('loading...');
-    const [formContainer, setForm] = useState(false);
+    const [formContainer, setForm] = useState(-2);
     const [courseContainer, setCourse] = useState(false)
     const [activeClass, setActiveClass] = useState("true");
     const [isBtnActive, setBtnActive] = useState(false);
     const [itemList, setItemList] = useState(null);
     const menuStateCompare = useRef('ref');
+    const itemGate = useRef(false);
     const [updater, setUpdate] = useState(0);
     const menusApi = "http://192.168.0.14:4000/menu/" + params.menuid;
     const getOptions =  {
         method: 'GET',
     }  
 
-    const itemRender = () => {
-        if (currentMenu.item) {
+    const sectionRender = () => {
+        if (currentMenu.section) {
             let mapped = [];
-            console.log("item render conditional success");
-            mapped = currentMenu.item.map((params) => {
+            console.log(currentMenu.section);
+            mapped = currentMenu.section.map((params, i) => {
+                let conditionalFormRender = false;
+                let conditionalButtonRender = false;
+                if (formContainer == i) {
+                    console.log(formContainer)
+                    conditionalFormRender = <ItemForm updateParentState={updateState} formCallback={itemCallback} params={params}/>;
+                    conditionalButtonRender = <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm, i)}>Cancel</Button> ;   
+                }
+
+                else {
+                    conditionalFormRender = false;
+                    conditionalButtonRender = <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm, i)}>Add Item</Button> 
+                }
                 return(
-                    <div className="item">
-                        <p>{params.name}</p>
-                        <p>{params.price}</p>
+                    <div key={i} className="item">
+                        {console.log(params._id)}
+                        <h2>{params.name}</h2>
+                        {conditionalButtonRender}
+                        {conditionalFormRender}
+                        {params.item ? params.item.map(params2 => <p>{params2.item}</p>) : "no items"}       
                     </div>
                 );                    
             });
@@ -126,7 +182,7 @@ function EditMenuPage() {
         }
     }
 
-
+    
     useEffect( () => {
             fetch(menusApi, getOptions)
                 .then(response => response.text())
@@ -136,26 +192,34 @@ function EditMenuPage() {
                     console.log(parsed);
                     console.log(currentMenu);
                     
-                    if (currentMenu.item) {
+                    if (currentMenu.section) {
                        console.log('item detected');
-                       var currentMenuLength = currentMenu.item.length;
-                       var currentCompareLength = parsed.item.length;
+                       var currentMenuLength = currentMenu.section.length;
+                       var currentCompareLength = parsed.section.length;
                     }
 
                     if ((currentMenu == 'loading...') || (currentMenuLength != currentCompareLength)) {
-                        setMenu(parsed);   
+                        return setMenu(parsed);   
                     }
                     console.log(currentMenu);
                 })
                 .then(() => {
-                    if ((currentMenu != menuStateCompare.current)) {
-                        itemRender();
+                    if (currentMenu != menuStateCompare.current || itemGate.current == true) {
+                        sectionRender();
+                        itemGate.current = false;
                     }
                 });
     });
 
-    const formStateHandler = (handlerState, setHandlerState) => {
-            if (handlerState == false) {
+    const formStateHandler = (handlerState, setHandlerState, target) => {
+            if (formContainer) {
+                console.log(target);
+                setHandlerState(target);
+                setActiveClass("cancel-button");
+
+            }
+            else if (handlerState == false) {
+                console.log(target);
                 setHandlerState(true);
                 setBtnActive(true);
                 setActiveClass("cancel-button");
@@ -167,18 +231,24 @@ function EditMenuPage() {
             }
     }
 
-    const showClickHandler = (state, setState) => {
-        formStateHandler(state, setState); 
+    const showClickHandler = (state, setState, arraynum) => {
+        console.log(arraynum);
+        itemGate.current = true; 
+        formStateHandler(state, setState, arraynum); 
+        console.log(state);
     }
 
-    const formCallback = () => {
+    const itemCallback = () => {
         formStateHandler(formContainer, setForm)
+    }
+
+    const catCallback = () => {
+        formStateHandler(courseContainer, setCourse)
     }
 
     const updateState = () => {
         let updateIncrement = updater + 1;
         setUpdate(updateIncrement);
-        console.log("it fuckin' fired, at least");
         console.log(currentMenu.item);
         console.log(menuStateCompare.current.item);
     }
@@ -187,9 +257,8 @@ function EditMenuPage() {
         <Card>
             <h2>{currentMenu.name}</h2>
             <h3>{currentMenu.category}</h3>
-            {!courseContainer && <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm)}>{!isBtnActive ? 'Add Item' : 'Cancel'}</Button>}{!formContainer && <Button className={activeClass} onClick={() => showClickHandler(courseContainer, setCourse)}>{!isBtnActive ? 'Add Section' : 'Cancel'}</Button>}
-            <div>{formContainer && <ItemForm updateParentState={updateState} formCallback={formCallback} params={params}/>}</div>
-            <div>{courseContainer && <CatForm/>}</div>
+            {<Button className={activeClass} onClick={() => showClickHandler(courseContainer, setCourse)}>{!isBtnActive ? 'Add Section' : 'Cancel'}</Button>}
+            <div>{courseContainer && <CatForm updateParentState={updateState} formCallback={catCallback} urlparams={params}/>}</div>
             <div>{itemList}</div>
         </Card>
     );

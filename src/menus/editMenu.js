@@ -17,13 +17,14 @@ function ItemForm(props) {
     const [itemName, setFormName] = useState(null);
     const [itemPrice, setFormPrice] = useState(null);
 
-    useEffect(() => {
+    useEffect(() => {   
         formAnimate();
     });
 
     const pushToServer = () => {
         const menusApiAddress = "http://192.168.0.14:4000/menu/" + props.params.menuid + "/add-item" ;
-        const submitData = {name: itemName, price: itemPrice};
+        const submitData = {name: itemName, price: itemPrice, category: props.category};
+        console.log(props.category);
         const postOptions = {
             method: 'POST',
             headers: {
@@ -131,16 +132,24 @@ function CatForm(props) {
     );
 }
 
+function AddSectionRender(props) {
+    console.log(props.renderCondition);
+    if (props.renderCondition == null) {
+        return <Button className={props.activeClass} onClick={() => props.showClickHandler('courseContainer', 'setCourse')}>{!props.isBtnActive ? 'Add Section' : 'Cancel'}</Button>
+    }
+    return <span></span>;
+}
 
 function EditMenuPage() {
     
     const params = useParams();
     const [currentMenu, setMenu] = useState('loading...');
-    const [formContainer, setForm] = useState(-2);
+    const [formContainer, setForm] = useState(false);
     const [courseContainer, setCourse] = useState(false)
     const [activeClass, setActiveClass] = useState("true");
     const [isBtnActive, setBtnActive] = useState(false);
     const [itemList, setItemList] = useState(null);
+    const [mappedItemChecker, setItemChecker] = useState(null);
     const menuStateCompare = useRef('ref');
     const itemGate = useRef(false);
     const [updater, setUpdate] = useState(0);
@@ -156,15 +165,16 @@ function EditMenuPage() {
             mapped = currentMenu.section.map((params, i) => {
                 let conditionalFormRender = false;
                 let conditionalButtonRender = false;
-                if (formContainer == i) {
+                if (mappedItemChecker == i) {
                     console.log(formContainer)
-                    conditionalFormRender = <ItemForm updateParentState={updateState} formCallback={itemCallback} params={params}/>;
-                    conditionalButtonRender = <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm, i)}>Cancel</Button> ;   
+                    conditionalFormRender = <ItemForm category={i} updateParentState={updateState} formCallback={itemCallback} params={params}/>;
+                    conditionalButtonRender = <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm)}>Cancel</Button> ;   
+
                 }
 
                 else {
                     conditionalFormRender = false;
-                    conditionalButtonRender = <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm, i)}>Add Item</Button> 
+                    conditionalButtonRender = !isBtnActive && <Button className={activeClass} onClick={() => showClickHandler(formContainer, setForm, i)}>Add Item</Button> ;
                 }
                 return(
                     <div key={i} className="item">
@@ -212,23 +222,24 @@ function EditMenuPage() {
     });
 
     const formStateHandler = (handlerState, setHandlerState, target) => {
-            if (formContainer) {
-                console.log(target);
-                setHandlerState(target);
-                setActiveClass("cancel-button");
-
-            }
-            else if (handlerState == false) {
-                console.log(target);
-                setHandlerState(true);
-                setBtnActive(true);
-                setActiveClass("cancel-button");
-            }
-            else {
-                setHandlerState(false);
-                setBtnActive(false);
-                setActiveClass(" ");
-            }
+        if (handlerState == "courseContainer") {
+            handlerState = eval(handlerState);
+            console.log(handlerState);
+            setHandlerState = eval(setHandlerState);
+        }   
+        if (handlerState == false) {
+            console.log(target);
+            setItemChecker(target);
+            setHandlerState(true);
+            setBtnActive(true);
+            setActiveClass("cancel-button");
+            return;
+        }
+            
+        setHandlerState(false);
+        setItemChecker(null)
+        setBtnActive(false);
+        setActiveClass(" ");
     }
 
     const showClickHandler = (state, setState, arraynum) => {
@@ -257,7 +268,7 @@ function EditMenuPage() {
         <Card>
             <h2>{currentMenu.name}</h2>
             <h3>{currentMenu.category}</h3>
-            {<Button className={activeClass} onClick={() => showClickHandler(courseContainer, setCourse)}>{!isBtnActive ? 'Add Section' : 'Cancel'}</Button>}
+            <AddSectionRender activeClass={activeClass} renderCondition={mappedItemChecker} isBtnActive={isBtnActive} showClickHandler={showClickHandler}/>
             <div>{courseContainer && <CatForm updateParentState={updateState} formCallback={catCallback} urlparams={params}/>}</div>
             <div>{itemList}</div>
         </Card>

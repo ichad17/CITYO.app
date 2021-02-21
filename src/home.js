@@ -18,7 +18,7 @@ import {
     
     render() {
       return ( 
-        <div className="grid-container">
+        <div className="grid-container-home">
             <Card id="orders">
                 <h2>Orders</h2>
                 <Orderitem/>

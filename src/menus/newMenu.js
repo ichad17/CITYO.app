@@ -26,7 +26,7 @@ class MenuSetup extends React.Component {
         this.handleNameChange = this.handleNameChange.bind(this); 
         this.handleCatChange = this.handleCatChange.bind(this); 
         this.handleSubmit = this.handleSubmit.bind(this); 
-        this.postMenu = "http://192.168.0.14:4000/menus";
+        this.postMenu = "http://192.168.0.14:4000/menu";
         this.getMenu = "http://192.168.0.14:4000/menu/byname/";
         this.postOptions = {
             method: 'POST',

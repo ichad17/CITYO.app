@@ -7,7 +7,7 @@ import {
 import '../App.css';
 import menus from './menus.js';
 import trash from '../images/trash.png';
-const menusApi = "http://192.168.0.14:4000/menus";
+const menusApi = "http://192.168.0.14:4000/menu";
 
 
 function MenuItem(props) {
@@ -28,10 +28,10 @@ class MenuList extends React.Component {
         this.menulistCompare = null;
     }
 
-    alertBoxHandler = async (name, id) => {
+    alertBoxHandler = (name, id) => {
         console.log(this.state.alertBoxHandler)
         console.log(id)
-        await this.setState({deleteId: id, deleteName: name})
+        this.setState({deleteId: id, deleteName: name})
         console.log(this.state.deleteId)
         this.boxToggle();
         
@@ -62,9 +62,9 @@ class MenuList extends React.Component {
 
     boxToggle() {
         if (!this.state.alertBoxHandler) {  
-            this.setState({alertBoxHandler: true});
+            return this.setState({alertBoxHandler: true});
         }
-        else this.setState({alertBoxHandler: false});
+        this.setState({alertBoxHandler: false});
     }
 
     menuRender() {
@@ -89,7 +89,7 @@ class MenuList extends React.Component {
         return(
             <div className="grid-container">
                 {this.state.sortedMenu}
-                {this.state.alertBoxHandler && <AlertBox nameparams={this.state.deleteName} deleteFetch={this.deleteCall} alertToggle={this.alertBoxHandler} >Are you sure you want to delete</AlertBox>}
+                {this.state.alertBoxHandler && <AlertBox nameparams={this.state.deleteName} action={this.deleteCall} actionName="Delete" alertToggle={this.alertBoxHandler} >Are you sure you want to delete</AlertBox>}
             </div>
         );
     }

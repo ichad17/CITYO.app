@@ -12,6 +12,7 @@ class ListItem extends React.Component {
         super(props);
         this.state = {isActive: false};
     }
+
     
     render() {
         return (
@@ -26,17 +27,38 @@ class ListItem extends React.Component {
 class Sidebar extends React.Component {
     constructor(props) {
       super(props);
+      this.state = {stateToggleState: false};
+      this.darkState = 'Dark';
+      this.position = '0px';
+    }
+
+    componentDidUpdate() {
+      if (this.state.stateToggleState != this.props.toggleState) {
+        console.log('intial update')
+        this.setState({stateToggleState: this.props.toggleState});
+        this.position = (this.state.stateToggleState) ? '0px' : '-93px';
+      }
+
+      if (this.props.darkMode == " ") {
+        this.darkState = 'Dark';
+      } else if(this.props.darkMode == "dark") {
+        this.darkState =" Light"
+      }
+      
     }
   
     render(){   
       return (
-        <div className="sidebar">
-          <ul className="sidebar-list">
+        <div style={{left: this.position}} className={"sidebar "}>
+          <ul  className="sidebar-list">
             <ListItem img={homeicon} txt={'Home'} link="/home"/>
             <ListItem img={ordericon} txt={'Orders'} link="/orders"/>
             <ListItem img={homeicon} txt={'Menus'} link="/menus"/>
             <ListItem img={homeicon} txt={'Settings'} link="/test"/> 
           </ul>
+          <div className={"darkmode-button"}>
+            <p onClick={this.props.darkMode}>{this.darkState} Mode</p>
+          </div>
         </div>
       );
     }

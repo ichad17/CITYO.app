@@ -40,7 +40,7 @@ class AlertBox extends React.Component {
         <Card>
           <p>{this.props.children + " " + this.props.nameparams + "?"}</p>
           <br/>
-          <div className="alertbuttons"><Button onClick={this.props.deleteFetch} className="alert-button">Delete</Button><Button onClick={this.props.alertToggle}>Cancel</Button></div>
+          <div className="alertbuttons"><Button onClick={this.props.action} className="alert-button">{this.props.actionName}</Button><Button onClick={this.props.alertToggle}>Cancel</Button></div>
         </Card>
       </div>
     );
@@ -49,14 +49,23 @@ class AlertBox extends React.Component {
 
 
 class Card extends React.Component {
+
   constructor(props) {
       super(props);
+      this.cardstyle = 'card';
+      if (this.props.style) {
+        this.cardstyle = props.style;
+      }
 
+      if(this.props.className) {
+        this.cardstyle = 'card  ' + this.props.className;
+      }
   }
+
 
   render() {
       return (
-          <div id={this.props.id} className="card">
+          <div id={this.props.id} className={this.cardstyle}>
               {this.props.children}
           </div>
       );
@@ -77,12 +86,23 @@ class MainContentSet extends React.Component {
 
     constructor(props) {
       super(props);
-      this.state = {}
+      this.state = {stateToggleState: false};
+    }
+
+    componentDidUpdate() {
+      if (this.state.stateToggleState != this.props.toggleState) {
+        console.log(this.props.toggleState, this.state.stateToggleState)
+        this.position = (this.state.stateToggleState) ? '100px' : '0px';
+        this.width = (this.state.stateToggleState) ? '100px':'0px';
+        this.setState({stateToggleState: this.props.toggleState});
+        console.log(this.state.stateToggleState);
+      }
+      
     }
     
     render() {
       return (
-      <div id="content"> 
+      <div style={{width: `calc(100% - ${this.width})`, left: this.position}}id="content"> 
         <Title/>
         <Switch>
             /* home */ 
